@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/EpMedia.iml" filepath="$PROJECT_DIR$/EpMedia.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/videoEditor.iml" filepath="$PROJECT_DIR$/videoEditor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/videoeditlib/videoeditlib.iml" filepath="$PROJECT_DIR$/videoeditlib/videoeditlib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/videoeditor/videoeditor.iml" filepath="$PROJECT_DIR$/videoeditor/videoeditor.iml" />
+    </modules>
+  </component>
+</project>

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">VideoEditor</string>
+    <string name="import_video">Import Video</string>
+</resources>
