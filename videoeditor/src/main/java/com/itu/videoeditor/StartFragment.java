@@ -57,10 +57,10 @@ public class StartFragment extends Fragment {
             public void onClick(View view) {
 //                mMainActivity.mNavigationManager.startGalleryScreen();
 
-                Intent intent = new Intent();
-                intent.setType("image/*");
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/* video/*");
+                intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[] {"image/*", "video/*"});
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                intent.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(Intent.createChooser(intent,"Select Picture"), PICK_IMAGE_MULTIPLE);
             }
         });

@@ -1,6 +1,8 @@
 package com.itu.videoeditor;
 
 import android.app.Fragment;
+import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import VideoHandle.OnEditorListener;
 import VideoHandle.VEDraw;
@@ -77,25 +80,33 @@ public class OperationFragment extends Fragment {
         mMainActivity = (MainActivity) getActivity();
 
         mImageView = view.findViewById(R.id.previewImageView);
-        mImageView.setImageURI(mUriList.get(0));
 
-        importButton = view.findViewById(R.id.importButton);
-        importButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mVideo = new VEVideo("sdcard/VideoEditor/original/test.mp4");
+        if(mUriList.get(0).toString().contains("image")){
+            mImageView.setImageURI(mUriList.get(0));
+        } else if(mUriList.get(0).toString().contains("video")){
+            MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+            mediaMetadataRetriever.setDataSource(mMainActivity, mUriList.get(0));
+            Bitmap bmFrame = mediaMetadataRetriever.getFrameAtTime(0); //unit in microsecond
+            mImageView.setImageBitmap(bmFrame);
+        }
 
-            }
-        });
+//        importButton = view.findViewById(R.id.importButton);
+//        importButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                mVideo = new VEVideo("sdcard/VideoEditor/original/test.mp4");
+//
+//            }
+//        });
 
-        cutButton = view.findViewById(R.id.cutButton);
-        cutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mVideo.clip(10,20);//from 10th sec cut 20 sec
-
-            }
-        });
+//        cutButton = view.findViewById(R.id.cutButton);
+//        cutButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                mVideo.clip(10,20);//from 10th sec cut 20 sec
+//
+//            }
+//        });
         trimButton = view.findViewById(R.id.trimButton);
 
         cropButton = view.findViewById(R.id.cropButton);
@@ -148,14 +159,14 @@ public class OperationFragment extends Fragment {
 //                mVideo.addFilter(filter);
 //            }
 //        });
-        exportButton = view.findViewById(R.id.exportButton);
-        exportButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                processSingleVideo("sdcard/VideoEditor/original/test.mp4",
-                        "sdcard/VideoEditor/output/newTest.mp4");
-            }
-        });
+//        exportButton = view.findViewById(R.id.exportButton);
+//        exportButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                processSingleVideo("sdcard/VideoEditor/original/test.mp4",
+//                        "sdcard/VideoEditor/output/newTest.mp4");
+//            }
+//        });
 //
 //        addBackgroundButton = view.findViewById(R.id.addBackgroundButton);
 //        addBackgroundButton.setOnClickListener(new View.OnClickListener() {
