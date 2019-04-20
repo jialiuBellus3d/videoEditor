@@ -27,6 +27,7 @@ import VideoHandle.VEVideo;
 
 import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
+import static com.itu.videoeditor.MainActivity.PICK_IMAGE_MULTIPLE;
 
 /**
  * Created by Jia Liu on 3/17/2019.
@@ -35,10 +36,8 @@ public class StartFragment extends Fragment {
     private MainActivity mMainActivity;
     ImageButton addButton;
 
-    int PICK_IMAGE_MULTIPLE = 1;
-    String imageEncoded;
-    List<String> imagesEncodedList;
-    ArrayList<Uri> mArrayUri;
+//    String imageEncoded;
+//    List<String> imagesEncodedList;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -51,7 +50,7 @@ public class StartFragment extends Fragment {
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         mMainActivity = (MainActivity) getActivity();
 
-        addButton = view.findViewById(R.id.addResourceButton);
+        addButton = view.findViewById(R.id.addButton);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -77,7 +76,7 @@ public class StartFragment extends Fragment {
                 // Get the Image from data
 
                 String[] filePathColumn = { MediaStore.Images.Media.DATA };
-                imagesEncodedList = new ArrayList<String>();
+//                imagesEncodedList = new ArrayList<String>();
                 if(data.getData()!=null){
 
                     Uri mImageUri=data.getData();
@@ -89,33 +88,33 @@ public class StartFragment extends Fragment {
                     cursor.moveToFirst();
 
                     int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                    imageEncoded  = cursor.getString(columnIndex);
+//                    imageEncoded  = cursor.getString(columnIndex);
                     cursor.close();
 
                 } else {
                     if (data.getClipData() != null) {
                         ClipData mClipData = data.getClipData();
-                        mArrayUri = new ArrayList<Uri>();
+                        mMainActivity.mArrayUri = new ArrayList<Uri>();
                         for (int i = 0; i < mClipData.getItemCount(); i++) {
 
                             ClipData.Item item = mClipData.getItemAt(i);
                             Uri uri = item.getUri();
                             Log.e(TAG, "else: "+uri.toString());
 
-                            mArrayUri.add(uri);
+                            mMainActivity.mArrayUri.add(uri);
                             // Get the cursor
                             Cursor cursor = mMainActivity.getContentResolver().query(uri, filePathColumn, null, null, null);
                             // Move to first row
                             cursor.moveToFirst();
 
                             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                            imageEncoded  = cursor.getString(columnIndex);
-                            imagesEncodedList.add(imageEncoded);
+//                            imageEncoded  = cursor.getString(columnIndex);
+//                            imagesEncodedList.add(imageEncoded);
                             cursor.close();
 
                         }
-                        Log.e(TAG, "Selected Images: " + mArrayUri.size());
-                        mMainActivity.mNavigationManager.startOperationScreen(mArrayUri);
+                        Log.e(TAG, "Selected Images: " + mMainActivity.mArrayUri.size());
+                        mMainActivity.mNavigationManager.startOperationScreen(mMainActivity.mArrayUri);
                     }
                 }
             } else {

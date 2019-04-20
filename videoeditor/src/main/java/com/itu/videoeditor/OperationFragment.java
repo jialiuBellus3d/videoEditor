@@ -1,10 +1,14 @@
 package com.itu.videoeditor;
 
 import android.app.Fragment;
+import android.content.ClipData;
+import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import java.util.ArrayList;
@@ -23,7 +28,9 @@ import VideoHandle.VEEditor;
 import VideoHandle.VEText;
 import VideoHandle.VEVideo;
 
+import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
+import static com.itu.videoeditor.MainActivity.PICK_IMAGE_MULTIPLE;
 
 /**
  * Created by Jia Liu on 3/17/2019.
@@ -32,9 +39,12 @@ public class OperationFragment extends Fragment {
     private MainActivity mMainActivity;
     ArrayList<Uri> mUriList;
 
+    static final int VIDEO_SPLIT_TIME = 3;
     int mCurrentRotation = 0;
     boolean mCurrentMirror = false;
     VEVideo mVideo;
+
+    LinearLayout scrollPreview;
     Button importButton;
     Button cutButton;
 //    Button cropButton;
@@ -80,16 +90,59 @@ public class OperationFragment extends Fragment {
         mMainActivity = (MainActivity) getActivity();
 
         mImageView = view.findViewById(R.id.previewImageView);
+        scrollPreview = view.findViewById(R.id.scrollPreview);
 
+        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+
+        // set scroll preview
+        for(int i = 0; i < mUriList.size(); i++){
+            if(mUriList.get(i).toString().contains("image")){
+                ImageView imgView = new ImageView(mMainActivity);
+                imgView.setImageURI(mUriList.get(i));
+                scrollPreview.addView(imgView);
+                imgView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                imgView.getLayoutParams().width = 200;
+                imgView.getLayoutParams().height = 150;
+            }
+            else if(mUriList.get(i).toString().contains("video")){
+                mediaMetadataRetriever.setDataSource(mMainActivity, mUriList.get(i));
+                String time = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+                long sectionNumber = Long.parseLong(time)/1000;
+                for(int j = 0; j<sectionNumber; j++) {
+                    ImageView imgView = new ImageView(mMainActivity);
+                    Bitmap bmFrame = mediaMetadataRetriever.getFrameAtTime(j*3000000); //unit in microsecond
+                    imgView.setImageBitmap(bmFrame);
+                    scrollPreview.addView(imgView);
+                    imgView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                    imgView.getLayoutParams().width = 300;
+                    imgView.getLayoutParams().height = 200;
+                }
+            }
+        }
+
+        mediaMetadataRetriever.release();
+        // set image preview
         if(mUriList.get(0).toString().contains("image")){
             mImageView.setImageURI(mUriList.get(0));
         } else if(mUriList.get(0).toString().contains("video")){
-            MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
             mediaMetadataRetriever.setDataSource(mMainActivity, mUriList.get(0));
             Bitmap bmFrame = mediaMetadataRetriever.getFrameAtTime(0); //unit in microsecond
             mImageView.setImageBitmap(bmFrame);
         }
 
+        ImageButton addButton = view.findViewById(R.id.addResourceButton);
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+//                mMainActivity.mNavigationManager.startGalleryScreen();
+
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/* video/*");
+                intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[] {"image/*", "video/*"});
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                startActivityForResult(Intent.createChooser(intent,"Select Picture"), PICK_IMAGE_MULTIPLE);
+            }
+        });
 //        importButton = view.findViewById(R.id.importButton);
 //        importButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -287,6 +340,68 @@ public class OperationFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.e(TAG, "onActivityResult: "+requestCode+"    "+resultCode);
+
+        try {
+            // When an Image is picked
+            if (requestCode == PICK_IMAGE_MULTIPLE && resultCode == RESULT_OK
+                    && null != data) {
+                // Get the Image from data
+
+                String[] filePathColumn = { MediaStore.Images.Media.DATA };
+//                imagesEncodedList = new ArrayList<String>();
+                if(data.getData()!=null){
+
+                    Uri mImageUri=data.getData();
+                    Log.e(TAG, "If: "+mImageUri.toString());
+                    // Get the cursor
+                    Cursor cursor = mMainActivity.getContentResolver().query(mImageUri,
+                            filePathColumn, null, null, null);
+                    // Move to first row
+                    cursor.moveToFirst();
+
+                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+//                    imageEncoded  = cursor.getString(columnIndex);
+                    cursor.close();
+
+                } else {
+                    if (data.getClipData() != null) {
+                        ClipData mClipData = data.getClipData();
+                        for (int i = 0; i < mClipData.getItemCount(); i++) {
+
+                            ClipData.Item item = mClipData.getItemAt(i);
+                            Uri uri = item.getUri();
+                            Log.e(TAG, "else: "+uri.toString());
+
+                            mMainActivity.mArrayUri.add(uri);
+                            // Get the cursor
+                            Cursor cursor = mMainActivity.getContentResolver().query(uri, filePathColumn, null, null, null);
+                            // Move to first row
+                            cursor.moveToFirst();
+
+                            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+//                            imageEncoded  = cursor.getString(columnIndex);
+//                            imagesEncodedList.add(imageEncoded);
+                            cursor.close();
+
+                        }
+                        Log.e(TAG, "Selected Images: " + mMainActivity.mArrayUri.size());
+                        mMainActivity.mNavigationManager.startOperationScreen(mMainActivity.mArrayUri);
+                    }
+                }
+            } else {
+//                Toast.makeText(this, "You haven't picked Image",
+//                        Toast.LENGTH_LONG).show();
+            }
+        } catch (Exception e) {
+//            Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG)
+//                    .show();
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 
 
 }
