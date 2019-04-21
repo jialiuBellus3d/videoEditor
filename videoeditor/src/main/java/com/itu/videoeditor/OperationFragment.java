@@ -5,6 +5,8 @@ import android.content.ClipData;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,6 +26,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
@@ -49,13 +52,11 @@ public class OperationFragment extends Fragment {
     static final int IMAGE_DURATION = 3;//in sec
     float mTotalSec = 0;
     int mCurrentPreviewIndex = 0;
-    int mCurrentRotation = 0;
     int mImageCount = 0;
     int mVideoCount = 0;
-    boolean mCurrentMirror = false;
+    boolean mIsCurrentVideo = false;
 
     ArrayList<Float> videoDurationList;
-    ArrayList<Pair<Integer, Float>> totalList;
 
     VEVideo mVideo;
     MediaMetadataRetriever mediaMetadataRetriever;
@@ -109,7 +110,6 @@ public class OperationFragment extends Fragment {
         mMainActivity = (MainActivity) getActivity();
         mediaMetadataRetriever = new MediaMetadataRetriever();
         videoDurationList = new ArrayList<>();
-        totalList = new ArrayList<>();
 
         mImageView = view.findViewById(R.id.previewImageView);
         scrollView = view.findViewById(R.id.scrollView);
@@ -122,16 +122,33 @@ public class OperationFragment extends Fragment {
                 int tempIndex = mCurrentPreviewIndex;
                 mCurrentPreviewIndex = scrollX/SCROLL_IMAGE_WIDTH;
                 if(tempIndex != mCurrentPreviewIndex){
-                    Pair<Integer, Float> info = totalList.get(mCurrentPreviewIndex);
+                    Pair<Integer, Float> info = mMainActivity.totalList.get(mCurrentPreviewIndex);
+                    DataItem dataItem = mMainActivity.getCurrentDataItem(mCurrentPreviewIndex);
                     if(mUriList.get(info.first).toString().contains("video")){
+                        mIsCurrentVideo = true;
                         mediaMetadataRetriever.setDataSource(mMainActivity, mUriList.get(info.first));
                         Bitmap bmFrame = mediaMetadataRetriever.getFrameAtTime((mCurrentPreviewIndex-info.first)*3000000); //unit in microsecond
-                        mImageView.setImageBitmap(bmFrame);
+                        Matrix matrix = new Matrix();
+                        matrix.postRotate(dataItem.rotation);
+                        if(dataItem.isFlipped){
+                            matrix.postScale(-1, 1, dataItem.width/2, dataItem.height/2);
+                        }
+                        Bitmap rotatedBitmap = Bitmap.createBitmap(bmFrame, 0, 0, bmFrame.getWidth(), bmFrame.getHeight(), matrix, true);
+                        mImageView.setRotation(0);
+                        mImageView.setScaleX(1);
+                        mImageView.setImageBitmap(rotatedBitmap);
                     } else {
+                        mIsCurrentVideo = false;
                         mImageView.setImageURI(mUriList.get(info.first));
+                        mImageView.setRotation(dataItem.rotation);
+                        if(dataItem.isFlipped){
+                            mImageView.setScaleX(-1);
+                        } else {
+                            mImageView.setScaleX(1);
+                        }
                     }
                 }
-                float currentSec = mTotalSec*scrollX/(totalList.size())/SCROLL_IMAGE_WIDTH;
+                float currentSec = mTotalSec*scrollX/(mMainActivity.totalList.size())/SCROLL_IMAGE_WIDTH;
                 int lengthMinute = ((int)currentSec)/60;
                 currentTimeTV.setText(lengthMinute+":"+new DecimalFormat("#.#").format(currentSec-lengthMinute*60));
 //                Toast.makeText(mMainActivity,"Current X is : "+scrollX +"  ",Toast.LENGTH_SHORT).show();
@@ -148,13 +165,19 @@ public class OperationFragment extends Fragment {
         for(int i = 0; i < mUriList.size(); i++){
             if(mUriList.get(i).toString().contains("image")){
                 mImageCount++;
-                totalList.add(new Pair<Integer, Float>(i, (float)IMAGE_DURATION));
+                mMainActivity.totalList.add(new Pair<Integer, Float>(i, (float)IMAGE_DURATION));
                 ImageView imgView = new ImageView(mMainActivity);
                 imgView.setImageURI(mUriList.get(i));
                 scrollPreviewLL.addView(imgView);
                 imgView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 imgView.getLayoutParams().width = SCROLL_IMAGE_WIDTH;
                 imgView.getLayoutParams().height = SCROLL_IMAGE_HEIGHT;
+
+
+                BitmapFactory.Options o = new BitmapFactory.Options();
+                o.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(new File(mUriList.get(i).getPath()).getAbsolutePath(), o);
+                mMainActivity.mDataList.add(new DataItem(false, 3, o.outWidth, o.outHeight));
                 if(i==0){
                     mImageView.setImageURI(mUriList.get(0));
                 }
@@ -165,14 +188,16 @@ public class OperationFragment extends Fragment {
                 String time = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
                 float videoLength = Long.parseLong(time)/1000f;
                 videoDurationList.add(videoLength);
+
                 long sectionNumber = (long)(videoLength/VIDEO_SPLIT_TIME);
                 for(int j = 0; j<sectionNumber; j++) {
-                    totalList.add(new Pair<Integer, Float>(i, videoLength));
+                    mMainActivity.totalList.add(new Pair<Integer, Float>(i, videoLength));
 
                     ImageView imgView = new ImageView(mMainActivity);
                     Bitmap bmFrame = mediaMetadataRetriever.getFrameAtTime(j*3000000); //unit in microsecond
                     if(i == 0 && j == 0){
                         mImageView.setImageBitmap(bmFrame);
+                        mMainActivity.mDataList.add(new DataItem(true, 3, bmFrame.getWidth(), bmFrame.getHeight()));
                     }
                     imgView.setImageBitmap(bmFrame);
                     scrollPreviewLL.addView(imgView);
@@ -220,12 +245,22 @@ public class OperationFragment extends Fragment {
 //            }
 //        });
         trimButton = view.findViewById(R.id.trimButton);
+        trimButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mIsCurrentVideo){
+
+                } else {
+
+                }
+            }
+        });
 
         cropButton = view.findViewById(R.id.cropButton);
         cropButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mVideo.crop(480,360,0,0);
+//                mVideo.crop(480,360,0,0);
             }
         });
 
@@ -233,8 +268,11 @@ public class OperationFragment extends Fragment {
         rotateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mCurrentRotation+=90;
-                mVideo.rotation(mCurrentRotation%360, false);
+                int rotation = mMainActivity.getCurrentDataItem(mCurrentPreviewIndex).rotation;
+                rotation = (rotation+90)%360;
+                mMainActivity.getCurrentDataItem(mCurrentPreviewIndex).rotation = rotation;
+                mImageView.setRotation(rotation);
+//                mVideo.rotation(mCurrentRotation%360, false);
             }
         });
 
@@ -242,8 +280,14 @@ public class OperationFragment extends Fragment {
         mirrorButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mCurrentMirror = !mCurrentMirror;
-                mVideo.rotation(0, mCurrentMirror);
+                boolean isFlipped = mMainActivity.getCurrentDataItem(mCurrentPreviewIndex).isFlipped;
+                mMainActivity.getCurrentDataItem(mCurrentPreviewIndex).isFlipped = !isFlipped;
+                if(!isFlipped){
+                    mImageView.setScaleX(-1);
+                } else {
+                    mImageView.setScaleX(1);
+                }
+//                mVideo.rotation(0, mCurrentMirror);
             }
         });
 
