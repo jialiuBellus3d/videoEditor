@@ -27,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
@@ -73,7 +74,6 @@ public class OperationFragment extends Fragment {
     Button addTextButton;
     Button addLogoButton;
     Button addFilterButton;
-    Button exportButton;
     Button addBackgroundButton;
     Button separateVideoMusicButton;
     Button changeSpeedButton;
@@ -86,6 +86,7 @@ public class OperationFragment extends Fragment {
     ImageButton mirrorButton;
     ImageButton cropButton;
     ImageButton textButton;
+    ImageButton exportButton;
     ImageView mImageView;
 
     String videoPath="sdcard/VideoEditor/original/test.mp4";
@@ -315,14 +316,15 @@ public class OperationFragment extends Fragment {
 //                mVideo.addFilter(filter);
 //            }
 //        });
-//        exportButton = view.findViewById(R.id.exportButton);
-//        exportButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
+        exportButton = view.findViewById(R.id.exportButton);
+        exportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 //                processSingleVideo("sdcard/VideoEditor/original/test.mp4",
 //                        "sdcard/VideoEditor/output/newTest.mp4");
-//            }
-//        });
+                processAllVideos();
+            }
+        });
 //
 //        addBackgroundButton = view.findViewById(R.id.addBackgroundButton);
 //        addBackgroundButton.setOnClickListener(new View.OnClickListener() {
@@ -414,7 +416,7 @@ public class OperationFragment extends Fragment {
 //                });
 //            }
 //        });
-//        mProgressBar = view.findViewById(R.id.progressBar);
+        mProgressBar = view.findViewById(R.id.progressBar);
     }
 
     void processSingleVideo(String url, String outFile){
@@ -425,6 +427,52 @@ public class OperationFragment extends Fragment {
         outputOption.frameRate = 30;
         outputOption.bitRate = 10;
         VEEditor.exec(mVideo, outputOption, new OnEditorListener() {
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onFailure() {
+
+            }
+
+            @Override
+            public void onProgress(float progress) {
+                Log.e(TAG, "Processing Speed: "+progress);
+                mProgressBar.setProgress((int)(progress*100));
+            }
+        });
+    }
+
+    private void processAllVideos(){
+        int width = 0;
+        int height = 0;
+        ArrayList<VEVideo> epVideos = new ArrayList<>();
+        for(int i = 0; i < mUriList.size(); i++){
+            String filePath = "";
+            try {
+                filePath=PathUtil.getPath(mMainActivity, mUriList.get(i));
+                Log.e(TAG, filePath);
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+
+            VEVideo tempVideo = new VEVideo(filePath);
+            DataItem dataItem = mMainActivity.getCurrentDataItem(i);
+            width = Math.min(dataItem.width, width);
+            height = Math.min(dataItem.height, height);
+
+            tempVideo.rotation(dataItem.rotation, dataItem.isFlipped);
+            tempVideo.clip(0,5);
+            epVideos.add(tempVideo);
+        }
+        VEEditor.OutputOption outputOption = new VEEditor.OutputOption("sdcard/VideoEditor/output/newTest.mp4");
+        outputOption.frameRate = 30;//输出视频帧率,默认30
+        outputOption.bitRate = 10;//输出视频码率,默认10
+        outputOption.setWidth(width);
+        outputOption.setHeight(height);
+        VEEditor.merge(epVideos, outputOption, new OnEditorListener() {
             @Override
             public void onSuccess() {
 
@@ -505,7 +553,6 @@ public class OperationFragment extends Fragment {
 
         super.onActivityResult(requestCode, resultCode, data);
     }
-
 
 //    private boolean isViewVisible(View view) {
 //        Rect scrollBounds = new Rect();
