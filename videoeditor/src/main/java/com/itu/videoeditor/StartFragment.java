@@ -50,6 +50,7 @@ public class StartFragment extends Fragment {
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         mMainActivity = (MainActivity) getActivity();
 
+        Log.e(TAG, "screen width: "+view.getWidth()+ "  height: "+view.getHeight());
         addButton = view.findViewById(R.id.addButton);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override

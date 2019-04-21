@@ -10,20 +10,24 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import VideoHandle.OnEditorListener;
-import VideoHandle.VEDraw;
 import VideoHandle.VEEditor;
 import VideoHandle.VEText;
 import VideoHandle.VEVideo;
@@ -39,12 +43,27 @@ public class OperationFragment extends Fragment {
     private MainActivity mMainActivity;
     ArrayList<Uri> mUriList;
 
-    static final int VIDEO_SPLIT_TIME = 3;
+    static final int VIDEO_SPLIT_TIME = 1;
+    static final int SCROLL_IMAGE_WIDTH = 300;
+    static final int SCROLL_IMAGE_HEIGHT = 200;
+    static final int IMAGE_DURATION = 3;//in sec
+    float mTotalSec = 0;
+    int mCurrentPreviewIndex = 0;
     int mCurrentRotation = 0;
+    int mImageCount = 0;
+    int mVideoCount = 0;
     boolean mCurrentMirror = false;
-    VEVideo mVideo;
 
-    LinearLayout scrollPreview;
+    ArrayList<Float> videoDurationList;
+    ArrayList<Pair<Integer, Float>> totalList;
+
+    VEVideo mVideo;
+    MediaMetadataRetriever mediaMetadataRetriever;
+
+    HorizontalScrollView scrollView;
+    LinearLayout scrollPreviewLL;
+    TextView totalTimeTV;
+    TextView currentTimeTV;
     Button importButton;
     Button cutButton;
 //    Button cropButton;
@@ -88,54 +107,94 @@ public class OperationFragment extends Fragment {
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         mMainActivity = (MainActivity) getActivity();
+        mediaMetadataRetriever = new MediaMetadataRetriever();
+        videoDurationList = new ArrayList<>();
+        totalList = new ArrayList<>();
 
         mImageView = view.findViewById(R.id.previewImageView);
-        scrollPreview = view.findViewById(R.id.scrollPreview);
+        scrollView = view.findViewById(R.id.scrollView);
+        scrollPreviewLL = view.findViewById(R.id.scrollPreviewLL);
 
-        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+        scrollView.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
+            @Override
+            public void onScrollChanged() {
+                int scrollX = scrollView.getScrollX();
+                int tempIndex = mCurrentPreviewIndex;
+                mCurrentPreviewIndex = scrollX/SCROLL_IMAGE_WIDTH;
+                if(tempIndex != mCurrentPreviewIndex){
+                    Pair<Integer, Float> info = totalList.get(mCurrentPreviewIndex);
+                    if(mUriList.get(info.first).toString().contains("video")){
+                        mediaMetadataRetriever.setDataSource(mMainActivity, mUriList.get(info.first));
+                        Bitmap bmFrame = mediaMetadataRetriever.getFrameAtTime((mCurrentPreviewIndex-info.first)*3000000); //unit in microsecond
+                        mImageView.setImageBitmap(bmFrame);
+                    } else {
+                        mImageView.setImageURI(mUriList.get(info.first));
+                    }
+                }
+                float currentSec = mTotalSec*scrollX/(totalList.size())/SCROLL_IMAGE_WIDTH;
+                int lengthMinute = ((int)currentSec)/60;
+                currentTimeTV.setText(lengthMinute+":"+new DecimalFormat("#.#").format(currentSec-lengthMinute*60));
+//                Toast.makeText(mMainActivity,"Current X is : "+scrollX +"  ",Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        ImageView imageView = new ImageView(mMainActivity);
+        scrollPreviewLL.addView(imageView);
+        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        imageView.getLayoutParams().width = mMainActivity.mScreenWidth/2;
+        imageView.getLayoutParams().height = SCROLL_IMAGE_HEIGHT;
 
         // set scroll preview
         for(int i = 0; i < mUriList.size(); i++){
             if(mUriList.get(i).toString().contains("image")){
+                mImageCount++;
+                totalList.add(new Pair<Integer, Float>(i, (float)IMAGE_DURATION));
                 ImageView imgView = new ImageView(mMainActivity);
                 imgView.setImageURI(mUriList.get(i));
-                scrollPreview.addView(imgView);
+                scrollPreviewLL.addView(imgView);
                 imgView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                imgView.getLayoutParams().width = 200;
-                imgView.getLayoutParams().height = 150;
+                imgView.getLayoutParams().width = SCROLL_IMAGE_WIDTH;
+                imgView.getLayoutParams().height = SCROLL_IMAGE_HEIGHT;
+                if(i==0){
+                    mImageView.setImageURI(mUriList.get(0));
+                }
             }
             else if(mUriList.get(i).toString().contains("video")){
+                mVideoCount++;
                 mediaMetadataRetriever.setDataSource(mMainActivity, mUriList.get(i));
                 String time = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-                long sectionNumber = Long.parseLong(time)/1000;
+                float videoLength = Long.parseLong(time)/1000f;
+                videoDurationList.add(videoLength);
+                long sectionNumber = (long)(videoLength/VIDEO_SPLIT_TIME);
                 for(int j = 0; j<sectionNumber; j++) {
+                    totalList.add(new Pair<Integer, Float>(i, videoLength));
+
                     ImageView imgView = new ImageView(mMainActivity);
                     Bitmap bmFrame = mediaMetadataRetriever.getFrameAtTime(j*3000000); //unit in microsecond
+                    if(i == 0 && j == 0){
+                        mImageView.setImageBitmap(bmFrame);
+                    }
                     imgView.setImageBitmap(bmFrame);
-                    scrollPreview.addView(imgView);
+                    scrollPreviewLL.addView(imgView);
                     imgView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                    imgView.getLayoutParams().width = 300;
-                    imgView.getLayoutParams().height = 200;
+                    imgView.getLayoutParams().width = SCROLL_IMAGE_WIDTH;
+                    imgView.getLayoutParams().height = SCROLL_IMAGE_HEIGHT;
                 }
             }
         }
 
-        mediaMetadataRetriever.release();
-        // set image preview
-        if(mUriList.get(0).toString().contains("image")){
-            mImageView.setImageURI(mUriList.get(0));
-        } else if(mUriList.get(0).toString().contains("video")){
-            mediaMetadataRetriever.setDataSource(mMainActivity, mUriList.get(0));
-            Bitmap bmFrame = mediaMetadataRetriever.getFrameAtTime(0); //unit in microsecond
-            mImageView.setImageBitmap(bmFrame);
+        currentTimeTV = view.findViewById(R.id.currentTiming);
+        totalTimeTV = view.findViewById(R.id.totalTiming);
+        mTotalSec = mImageCount*IMAGE_DURATION;
+        for(float length : videoDurationList){
+            mTotalSec+=length;
         }
-
+        int lengthMinute = ((int)mTotalSec)/60;
+        totalTimeTV.setText("Total: "+lengthMinute+":"+new DecimalFormat("#.#").format(mTotalSec-lengthMinute*60));
         ImageButton addButton = view.findViewById(R.id.addResourceButton);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                mMainActivity.mNavigationManager.startGalleryScreen();
-
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("image/* video/*");
                 intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[] {"image/*", "video/*"});
@@ -404,4 +463,17 @@ public class OperationFragment extends Fragment {
     }
 
 
+//    private boolean isViewVisible(View view) {
+//        Rect scrollBounds = new Rect();
+//        mScrollView.getDrawingRect(scrollBounds);
+//
+//        float top = view.getY();
+//        float bottom = top + view.getHeight();
+//
+//        if (scrollBounds.top < top && scrollBounds.bottom > bottom) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
 }
