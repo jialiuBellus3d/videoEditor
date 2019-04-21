@@ -23,8 +23,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -64,8 +64,11 @@ public class OperationFragment extends Fragment {
 
     HorizontalScrollView scrollView;
     LinearLayout scrollPreviewLL;
+    LinearLayout speedLL;
+    LinearLayout controlLL;
     TextView totalTimeTV;
     TextView currentTimeTV;
+    TextView tvProgressLabel;
     Button importButton;
     Button cutButton;
 //    Button cropButton;
@@ -82,6 +85,7 @@ public class OperationFragment extends Fragment {
 
     ImageButton trimButton;
     ImageButton speedButton;
+    ImageButton speedCheckButton;
     ImageButton rotateButton;
     ImageButton mirrorButton;
     ImageButton cropButton;
@@ -90,7 +94,7 @@ public class OperationFragment extends Fragment {
     ImageView mImageView;
 
     String videoPath="sdcard/VideoEditor/original/test.mp4";
-    String outfilePath="sdcard/VideoEditor/output/newTest.mp4";
+    String mOutfilePath ="sdcard/VideoEditor/output/newTest.mp4";
     String imagePath="sdcard/VideoEditor/original/image.jpg";
     String ttfPath="sdcard/VideoEditor/original/Montserrat-Regular.ttf";
     String audioPath="sdcard/VideoEditor/original/TheMonster.mp3";
@@ -208,6 +212,31 @@ public class OperationFragment extends Fragment {
                 }
             }
         }
+
+        // set a change listener on the SeekBar
+        SeekBar seekBar = view.findViewById(R.id.seekBar);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                // updated continuously as the user slides the thumb
+                tvProgressLabel.setText(progress+"x");
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // called when the user first touches the SeekBar
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // called after the user finishes moving the SeekBar
+            }
+        });
+
+        int progress = seekBar.getProgress();
+        tvProgressLabel = view.findViewById(R.id.seekBarTV);
+        tvProgressLabel.setText(progress/50.0+"x");
 
         currentTimeTV = view.findViewById(R.id.currentTiming);
         totalTimeTV = view.findViewById(R.id.totalTiming);
@@ -330,7 +359,7 @@ public class OperationFragment extends Fragment {
 //        addBackgroundButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
-//                VEEditor.music(videoPath, audioPath, outfilePath, 1, 0.7f, new OnEditorListener() {
+//                VEEditor.music(videoPath, audioPath, mOutfilePath, 1, 0.7f, new OnEditorListener() {
 //                    @Override
 //                    public void onSuccess() {
 //
@@ -352,7 +381,7 @@ public class OperationFragment extends Fragment {
 //        separateVideoMusicButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
-//                VEEditor.demuxer(videoPath, outfilePath,VEEditor.Format.MP3, new OnEditorListener() {
+//                VEEditor.demuxer(videoPath, mOutfilePath,VEEditor.Format.MP3, new OnEditorListener() {
 //                    @Override
 //                    public void onSuccess() {
 //
@@ -371,26 +400,42 @@ public class OperationFragment extends Fragment {
 //            }
 //        });
 //
+        speedLL = view.findViewById(R.id.speedLL);
+        controlLL = view.findViewById(R.id.controlLL);
         speedButton = view.findViewById(R.id.speedButton);
+        speedCheckButton = view.findViewById(R.id.speedCheckButton);
         speedButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                VEEditor.changePTS(videoPath, outfilePath, 2.0f, VEEditor.PTS.ALL, new OnEditorListener() {
-                    @Override
-                    public void onSuccess() {
-
-                    }
-
-                    @Override
-                    public void onFailure() {
-
-                    }
-
-                    @Override
-                    public void onProgress(float progress) {
-
-                    }
-                });
+                if(speedLL.getVisibility() == View.INVISIBLE) {
+                    speedLL.setVisibility(View.VISIBLE);
+                    controlLL.setVisibility(View.INVISIBLE);
+                }
+//                VEEditor.changePTS(videoPath, mOutfilePath, 2.0f, VEEditor.PTS.ALL, new OnEditorListener() {
+//                    @Override
+//                    public void onSuccess() {
+//
+//                    }
+//
+//                    @Override
+//                    public void onFailure() {
+//
+//                    }
+//
+//                    @Override
+//                    public void onProgress(float progress) {
+//
+//                    }
+//                });
+            }
+        });
+        speedCheckButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(speedLL.getVisibility() == View.VISIBLE){
+                    speedLL.setVisibility(View.INVISIBLE);
+                    controlLL.setVisibility(View.VISIBLE);
+                }
             }
         });
 //
@@ -398,7 +443,7 @@ public class OperationFragment extends Fragment {
 //        musicRevertPlayButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
-//                VEEditor.reverse(videoPath, outfilePath, true, true, new OnEditorListener() {
+//                VEEditor.reverse(videoPath, mOutfilePath, true, true, new OnEditorListener() {
 //                    @Override
 //                    public void onSuccess() {
 //
@@ -467,11 +512,11 @@ public class OperationFragment extends Fragment {
             tempVideo.clip(0,5);
             epVideos.add(tempVideo);
         }
-        VEEditor.OutputOption outputOption = new VEEditor.OutputOption("sdcard/VideoEditor/output/newTest.mp4");
+        VEEditor.OutputOption outputOption = new VEEditor.OutputOption(mOutfilePath);
         outputOption.frameRate = 30;//输出视频帧率,默认30
         outputOption.bitRate = 10;//输出视频码率,默认10
-        outputOption.setWidth(width);
-        outputOption.setHeight(height);
+//        outputOption.setWidth(width);
+//        outputOption.setHeight(height);
         VEEditor.merge(epVideos, outputOption, new OnEditorListener() {
             @Override
             public void onSuccess() {

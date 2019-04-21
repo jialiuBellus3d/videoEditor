@@ -39,7 +39,7 @@
 //    ProgressBar mProgressBar;
 //
 //    String videoPath="sdcard/VideoEditor/original/test.mp4";
-//    String outfilePath="sdcard/VideoEditor/output/newTest.mp4";
+//    String mOutfilePath="sdcard/VideoEditor/output/newTest.mp4";
 //    String imagePath="sdcard/VideoEditor/original/image.jpg";
 //    String ttfPath="sdcard/VideoEditor/original/Montserrat-Regular.ttf";
 //    String audioPath="sdcard/VideoEditor/original/TheMonster.mp3";
@@ -134,7 +134,7 @@
 //        addBackgroundButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
-//                VEEditor.music(videoPath, audioPath, outfilePath, 1, 0.7f, new OnEditorListener() {
+//                VEEditor.music(videoPath, audioPath, mOutfilePath, 1, 0.7f, new OnEditorListener() {
 //                    @Override
 //                    public void onSuccess() {
 //
@@ -156,7 +156,7 @@
 //        separateVideoMusicButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
-//                VEEditor.demuxer(videoPath, outfilePath,VEEditor.Format.MP3, new OnEditorListener() {
+//                VEEditor.demuxer(videoPath, mOutfilePath,VEEditor.Format.MP3, new OnEditorListener() {
 //                    @Override
 //                    public void onSuccess() {
 //
@@ -179,7 +179,7 @@
 //        changeSpeedButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
-//                VEEditor.changePTS(videoPath, outfilePath, 2.0f, VEEditor.PTS.ALL, new OnEditorListener() {
+//                VEEditor.changePTS(videoPath, mOutfilePath, 2.0f, VEEditor.PTS.ALL, new OnEditorListener() {
 //                    @Override
 //                    public void onSuccess() {
 //
@@ -202,7 +202,7 @@
 //        musicRevertPlayButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
-//                VEEditor.reverse(videoPath, outfilePath, true, true, new OnEditorListener() {
+//                VEEditor.reverse(videoPath, mOutfilePath, true, true, new OnEditorListener() {
 //                    @Override
 //                    public void onSuccess() {
 //
