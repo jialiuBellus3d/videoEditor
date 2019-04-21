@@ -9,10 +9,10 @@ public class VideoUitls {
 	}
 
 	/**
-	 * 获取视频信息
+	 * Get video information
 	 *
 	 * @param url
-	 * @return	视频时长（单位微秒）
+	 * @return	video duration in millisec
 	 */
 	public static long getDuration(String url) {
 		try {
@@ -26,7 +26,7 @@ public class VideoUitls {
 				}
 			}
 			MediaFormat mediaFormat = mediaExtractor.getTrackFormat(videoExt);
-			long res = mediaFormat.containsKey(MediaFormat.KEY_DURATION) ? mediaFormat.getLong(MediaFormat.KEY_DURATION) : 0;//时长
+			long res = mediaFormat.containsKey(MediaFormat.KEY_DURATION) ? mediaFormat.getLong(MediaFormat.KEY_DURATION) : 0;
 			mediaExtractor.release();
 			return res;
 		} catch (Exception e) {

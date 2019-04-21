@@ -9,23 +9,23 @@ import java.util.List;
 public class FileUtils {
 
 	/**
-	 * 此类用于生成合并视频所需要的文档
-	 * @param strcontent 视频路径集合
-	 * @param filePath 生成的地址
-	 * @param fileName 生成的文件名
+	 * Generate output file
+	 * @param strcontent a list of all video path
+	 * @param filePath generated file path
+	 * @param fileName generated file name
 	 */
 	public static void writeTxtToFile(List<String> strcontent, String filePath, String fileName) {
-		//生成文件夹之后，再生成文件，不然会出错
+		//generate directory first
 		makeFilePath(filePath, fileName);
 		String strFilePath = filePath + fileName;
-		// 每次写入时，都换行写
+		// start new line
 		String strContent = "";
 		for (int i = 0; i < strcontent.size(); i++) {
 			strContent += "file " + strcontent.get(i) + "\r\n";
 		}
 		try {
 			File file = new File(strFilePath);
-			//检查文件是否存在，存在则删除
+			//check whether file exists already, if so, delete it
 			if (file.isFile() && file.exists()) {
 				file.delete();
 			}
@@ -35,13 +35,13 @@ public class FileUtils {
 			raf.seek(file.length());
 			raf.write(strContent.getBytes());
 			raf.close();
-			Log.e("TestFile", "写入成功:" + strFilePath);
+			Log.e("TestFile", "Written successfully:" + strFilePath);
 		} catch (Exception e) {
-			Log.e("TestFile", "Error on write File:" + e);
+			Log.e("TestFile", "Error on writing File:" + e);
 		}
 	}
 
-	//创建路径
+	//Create file path
 	public static File makeFilePath(String filePath, String fileName) {
 		File file = null;
 		makeRootDirectory(filePath);
@@ -56,7 +56,7 @@ public class FileUtils {
 		return file;
 	}
 
-	//创建文件夹
+	//Create directory
 	public static void makeRootDirectory(String filePath) {
 		File file = null;
 		try {

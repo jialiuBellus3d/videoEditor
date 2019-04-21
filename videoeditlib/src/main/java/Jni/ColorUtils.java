@@ -3,7 +3,7 @@ package Jni;
 public class ColorUtils {
 
 	/**
-	 * 加载所有相关链接库
+	 * Load library
 	 */
 	static {
 		System.loadLibrary("colorutils");

@@ -9,7 +9,7 @@ public class TrackUtils {
 	private static final String TAG = "TrackUtils";
 
 	/**
-	 * 查找视频轨道
+	 * Select video track
 	 * @param extractor
 	 * @return
 	 */
@@ -27,7 +27,7 @@ public class TrackUtils {
 	}
 
 	/**
-	 * 查找音频轨道
+	 * Select audio track
 	 * @param extractor
 	 * @return
 	 */

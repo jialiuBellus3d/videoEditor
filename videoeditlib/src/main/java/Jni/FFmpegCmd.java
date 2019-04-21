@@ -7,7 +7,7 @@ import VideoHandle.OnEditorListener;
 @Keep
 public class FFmpegCmd {
 	/**
-	 * 加载所有相关链接库
+	 * Load all related library
 	 */
 	static {
 		System.loadLibrary("avutil");
@@ -24,7 +24,7 @@ public class FFmpegCmd {
 	private static long duration;
 
 	/**
-	 * 调用底层执行
+	 * Execute
 	 *
 	 * @param argc
 	 * @param argv
@@ -59,7 +59,7 @@ public class FFmpegCmd {
 
 
 	/**
-	 * 执行ffmoeg命令
+	 * Execute ffmoeg command
 	 *
 	 * @param cmds
 	 * @param listener

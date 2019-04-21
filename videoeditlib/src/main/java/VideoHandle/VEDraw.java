@@ -2,16 +2,16 @@ package VideoHandle;
 
 public class VEDraw {
 
-	private String picPath;//图片路径
-	private int picX;//图片x的位置
-	private int picY;//图片y的位置
-	private float picWidth;//图片的宽
-	private float picHeight;//图片的高
-	private boolean isAnimation;//是否是动图
+	private String picPath;
+	private int picX;//image position x
+	private int picY;//image position y
+	private float picWidth;
+	private float picHeight;
+	private boolean isAnimation;//if is gif
 
-	private String time = "";//起始结束时间
+	private String time = "";//start end time
 
-	private String picFilter;//图片滤镜
+	private String picFilter;//filter
 
 	public VEDraw(String picPath, int picX, int picY, float picWidth, float picHeight, boolean isAnimation) {
 		this.picPath = picPath;

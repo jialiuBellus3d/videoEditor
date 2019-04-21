@@ -407,9 +407,9 @@ public class OperationFragment extends Fragment {
         speedButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(speedLL.getVisibility() == View.INVISIBLE) {
+                if(speedLL.getVisibility() == View.GONE) {
                     speedLL.setVisibility(View.VISIBLE);
-                    controlLL.setVisibility(View.INVISIBLE);
+                    controlLL.setVisibility(View.GONE);
                 }
 //                VEEditor.changePTS(videoPath, mOutfilePath, 2.0f, VEEditor.PTS.ALL, new OnEditorListener() {
 //                    @Override
@@ -433,7 +433,7 @@ public class OperationFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if(speedLL.getVisibility() == View.VISIBLE){
-                    speedLL.setVisibility(View.INVISIBLE);
+                    speedLL.setVisibility(View.GONE);
                     controlLL.setVisibility(View.VISIBLE);
                 }
             }

@@ -4,20 +4,19 @@ import java.util.ArrayList;
 
 public class VEVideo {
 
-	private String videoPath;  //视频地址
+	private String videoPath;
 
-	//剪辑
-	private boolean isClip = false;//是否剪辑
-	private float clipStart;//剪辑开始时间
-	private float clipDuration;//剪辑时间
+	private boolean isClip = false; // whether clip
+	private float clipStart;
+	private float clipDuration;
 
-	//滤镜
+	//filter
 	private StringBuilder filter;
 
-	//特效
+	//special drawing effect
 	private ArrayList<VEDraw> epPics;
 
-	//裁剪
+	//crop
 	private Crop mCrop;
 
 
@@ -36,7 +35,7 @@ public class VEVideo {
 	}
 
 	/**
-	 * 获取滤镜效果
+	 * Get Filters
 	 *
 	 * @return
 	 */
@@ -45,7 +44,7 @@ public class VEVideo {
 	}
 
 	/**
-	 * 获取视频路径
+	 * Get Video Path
 	 *
 	 * @return
 	 */
@@ -54,7 +53,7 @@ public class VEVideo {
 	}
 
 	/**
-	 * 获取剪辑信息
+	 * Get whether video is clipped
 	 *
 	 * @return
 	 */
@@ -63,7 +62,7 @@ public class VEVideo {
 	}
 
 	/**
-	 * 获取剪辑起始时间
+	 * Get clip start time
 	 *
 	 * @return
 	 */
@@ -72,7 +71,7 @@ public class VEVideo {
 	}
 
 	/**
-	 * 获取剪辑持续时间
+	 * Get clip duration
 	 *
 	 * @return
 	 */
@@ -81,10 +80,10 @@ public class VEVideo {
 	}
 
 	/**
-	 * 设置视频剪辑
+	 * Set up clip settings
 	 *
-	 * @param start    起始时间，单位秒
-	 * @param duration 持续时间，单位秒
+	 * @param start    start time in second
+	 * @param duration duration time in second
 	 * @return
 	 */
 	public VEVideo clip(float start, float duration) {
@@ -96,10 +95,10 @@ public class VEVideo {
 
 
 	/**
-	 * 设置旋转和镜像
+	 * Set up rotation and mirror
 	 *
-	 * @param rotation 旋转角度(仅支持90,180,270度旋转)
-	 * @param isFlip   是否镜像
+	 * @param rotation rotation angle (only 90/180/270 degrees are supported)
+	 * @param isFlip   whether mirror
 	 * @return
 	 */
 	public VEVideo rotation(int rotation, boolean isFlip) {
@@ -136,12 +135,12 @@ public class VEVideo {
 	}
 
 	/**
-	 * 设置裁剪
+	 * Set up cropping
 	 *
-	 * @param width  裁剪宽度
-	 * @param height 裁剪高度
-	 * @param x      起始位置X
-	 * @param y      起始位置Y
+	 * @param width  cropped wioth
+	 * @param height cropped height
+	 * @param x      start position X
+	 * @param y      Start position Y
 	 * @return
 	 */
 	public VEVideo crop(float width, float height, float x, float y) {
@@ -152,7 +151,7 @@ public class VEVideo {
 	}
 
 	/**
-	 * 获取裁剪信息
+	 * Get Crop Setting
 	 * @return
 	 */
 	public Crop getCrop(){
@@ -160,15 +159,15 @@ public class VEVideo {
 	}
 
 	/**
-	 * 为视频添加文字
+	 * Add text to video
 	 *
-	 * @param size  文字大小
-	 * @param color 文字颜色(white,black,blue,red...)
-	 * @param x     文字的x坐标
-	 * @param y     文字的y坐标
-	 * @param ttf   文字字体的路径
-	 * @param text  添加的文字
-	 * @deprecated 废弃，采用EpText参数
+	 * @param size  font size
+	 * @param color font color(white,black,blue,red...)
+	 * @param x     font coordinate x
+	 * @param y     font coordinate y
+	 * @param ttf   font path
+	 * @param text  text needs to be added
+	 * @deprecated
 	 */
 	@Deprecated
 	public VEVideo addText(int x, int y, float size, String color, String ttf, String text) {
@@ -178,9 +177,9 @@ public class VEVideo {
 	}
 
 	/**
-	 * 为视频添加文字(新增可以控制显示周期)
+	 * Add text with duration
 	 *
-	 * @param VEText  添加文字类
+	 * @param VEText  VEText
 	 */
 	public VEVideo addText(VEText VEText) {
 		filter = getFilter();
@@ -189,14 +188,14 @@ public class VEVideo {
 	}
 
 	/**
-	 * 为视频添加时间
+	 * Add timing info to video
 	 *
-	 * @param size  文字大小
-	 * @param color 文字颜色(white,black,blue,red...)
-	 * @param x     文字的x坐标
-	 * @param y     文字的y坐标
-	 * @param ttf   文字字体的路径
-	 * @param type  时间类型(1==>hh:mm:ss,2==>yyyy-MM-dd hh:mm:ss,3==>yyyy年MM月dd日 hh时mm分ss秒)
+	 * @param size  font size
+	 * @param color font color(white,black,blue,red...)
+	 * @param x     font coordinate x
+	 * @param y     font coordinate y
+	 * @param ttf   font path
+	 * @param type  time type(1==>hh:mm:ss,2==>yyyy-MM-dd hh:mm:ss,3==>yyyyYearMMMonthddDay hhHourmmMinutessSecond)
 	 */
 	public VEVideo addTime(int x, int y, float size, String color, String ttf, int type){
 		long time=System.currentTimeMillis()/1000;
@@ -219,9 +218,9 @@ public class VEVideo {
 	}
 
 	/**
-	 * 添加自定义滤镜效果
+	 * Add filter effect
 	 *
-	 * @param ofi 命令符
+	 * @param ofi command
 	 * @return
 	 */
 	public VEVideo addFilter(String ofi) {
@@ -231,9 +230,9 @@ public class VEVideo {
 	}
 
 	/**
-	 * 为视频添加图片
+	 * Add images to video
 	 *
-	 * @param VEDraw 添加的图片类
+	 * @param VEDraw Special Image type
 	 * @return
 	 */
 	public VEVideo addDraw(VEDraw VEDraw) {
@@ -242,7 +241,7 @@ public class VEVideo {
 	}
 
 	/**
-	 * 获取添加的图片类
+	 * Get a list of the images added
 	 *
 	 * @return
 	 */
@@ -251,7 +250,7 @@ public class VEVideo {
 	}
 
 	/**
-	 * 裁剪信息类
+	 * Crop Information
 	 */
 	public class Crop {
 		float width;

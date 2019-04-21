@@ -5,13 +5,13 @@ public class VEText {
 	private String textFitler;
 
 	/**
-	 * @param x     文字起始位置X
-	 * @param y     文字起始位置Y
-	 * @param size  文字的大小
-	 * @param color 文字的颜色
-	 * @param ttf   文字的字体文件路径
-	 * @param text  添加文字的内容
-	 * @param time  起始结束时间(传null的时候为一直显示)
+	 * @param size  font size
+	 * @param color font color(white,black,blue,red...)
+	 * @param x     font coordinate x
+	 * @param y     font coordinate y
+	 * @param ttf   font path
+	 * @param text  text needs to be added
+	 * @param time  start and end time(null means shown all time)
 	 */
 	public VEText(int x, int y, float size, Color color, String ttf, String text, Time time) {
 		this.textFitler = "drawtext=fontfile=" + ttf + ":fontsize=" + size + ":fontcolor=" + color.getColor() + ":x=" + x + ":y=" + y + ":text='" + text + "'" + (time == null ? "" : time.getTime());
@@ -22,7 +22,7 @@ public class VEText {
 	}
 
 	/**
-	 * 起始结束时间的类
+	 * Start End time class
 	 */
 	public static class Time {
 		private String time;
@@ -37,7 +37,7 @@ public class VEText {
 	}
 
 	/**
-	 * 颜色
+	 * Color class
 	 */
 	public enum Color {
 		Red("Red"), Blue("Blue"), Yellow("Yellow"), Black("Black"), DarkBlue("DarkBlue"),

@@ -16,8 +16,8 @@ import Jni.VideoUitls;
 
 public class VEEditor {
 
-	private static final int DEFAULT_WIDTH = 480;//默认输出宽度
-	private static final int DEFAULT_HEIGHT = 360;//默认输出高度
+	private static final int DEFAULT_WIDTH = 480;//default export width
+	private static final int DEFAULT_HEIGHT = 360;//default export height
 
 	public enum Format {
 		MP3, MP4
@@ -31,15 +31,15 @@ public class VEEditor {
 	}
 
 	/**
-	 * 处理单个视频
+	 * Process single video
 	 *
-	 * @param VEVideo      需要处理的视频
-	 * @param outputOption 输出选项配置
+	 * @param VEVideo      video needs to be processed
+	 * @param outputOption output options
 	 */
 	public static void exec(VEVideo VEVideo, OutputOption outputOption, OnEditorListener onEditorListener) {
 		boolean isFilter = false;
 		ArrayList<VEDraw> VEDraws = VEVideo.getEpDraws();
-		//开始处理
+		//Start processing
 		CmdList cmd = new CmdList();
 		cmd.append("ffmpeg");
 		cmd.append("-y");
@@ -47,7 +47,7 @@ public class VEEditor {
 			cmd.append("-ss").append(VEVideo.getClipStart()).append("-t").append(VEVideo.getClipDuration()).append("-accurate_seek");
 		}
 		cmd.append("-i").append(VEVideo.getVideoPath());
-		//添加图片或者动图
+		//add images or gif
 		if (VEDraws.size() > 0) {
 			for (int i = 0; i < VEDraws.size(); i++) {
 				if (VEDraws.get(i).isAnimation()) {
@@ -90,7 +90,7 @@ public class VEEditor {
 				filter_complex.append(VEVideo.getFilters());
 				isFilter = true;
 			}
-			//设置输出分辨率
+			//Set up output resolution
 			if (outputOption.width != 0) {
 				if (VEVideo.getFilters() != null) {
 					filter_complex.append(",scale=").append(outputOption.width).append(":").append(outputOption.height)
@@ -107,7 +107,7 @@ public class VEEditor {
 			}
 		}
 
-		//输出选项
+		//output config
 		cmd.append(outputOption.getOutputInfo().split(" "));
 		if (!isFilter && outputOption.getOutputInfo().isEmpty()) {
 			cmd.append("-vcodec");
@@ -124,18 +124,18 @@ public class VEEditor {
 			long clipTime = (long) ((VEVideo.getClipDuration() - VEVideo.getClipStart()) * 1000000);
 			duration = clipTime < duration ? clipTime : duration;
 		}
-		//执行命令
+		//execute
 		execCmd(cmd, duration, onEditorListener);
 	}
 
 	/**
-	 * 合并多个视频
+	 * Combine multiple videos
 	 *
-	 * @param VEVideos     需要合并的视频集合
-	 * @param outputOption 输出选项配置
+	 * @param VEVideos     a list of all videos needs to be output
+	 * @param outputOption output options
 	 */
 	public static void merge(List<VEVideo> VEVideos, OutputOption outputOption, OnEditorListener onEditorListener) {
-		//检测是否有无音轨视频
+		//Check whether there is music
 		boolean isNoAudioTrack = false;
 		for (VEVideo VEVideo : VEVideos) {
 			MediaExtractor mediaExtractor = new MediaExtractor();
@@ -153,15 +153,15 @@ public class VEEditor {
 			}
 			mediaExtractor.release();
 		}
-		//设置默认宽高
+		//Set up default width and height
 		outputOption.width = outputOption.width == 0 ? DEFAULT_WIDTH : outputOption.width;
 		outputOption.height = outputOption.height == 0 ? DEFAULT_HEIGHT : outputOption.height;
-		//判断数量
+		//check on the list size
 		if (VEVideos.size() > 1) {
 			CmdList cmd = new CmdList();
 			cmd.append("ffmpeg");
 			cmd.append("-y");
-			//添加输入标示
+			//add text
 			for (VEVideo e : VEVideos) {
 				if (e.getVideoClip()) {
 					cmd.append("-ss").append(e.getClipStart()).append("-t").append(e.getClipDuration()).append("-accurate_seek");
@@ -177,7 +177,7 @@ public class VEEditor {
 					}
 				}
 			}
-			//添加滤镜标识
+			//add filter
 			cmd.append("-filter_complex");
 			StringBuilder filter_complex = new StringBuilder();
 			for (int i = 0; i < VEVideos.size(); i++) {
@@ -185,8 +185,8 @@ public class VEEditor {
 				filter_complex.append("[").append(i).append(":v]").append(filter).append("scale=").append(outputOption.width).append(":").append(outputOption.height)
 						.append(",setdar=").append(outputOption.getSar()).append("[outv").append(i).append("];");
 			}
-			//添加标记和处理宽高
-			int drawNum = VEVideos.size();//图标计数器
+			//add drawing
+			int drawNum = VEVideos.size();
 			for (int i = 0; i < VEVideos.size(); i++) {
 				for (int j = 0; j < VEVideos.get(i).getEpDraws().size(); j++) {
 					filter_complex.append("[").append(drawNum++).append(":0]").append(VEVideos.get(i).getEpDraws().get(j).getPicFilter()).append("scale=")
@@ -194,7 +194,7 @@ public class VEEditor {
 							.getPicHeight()).append("[p").append(i).append("a").append(j).append("];");
 				}
 			}
-			//添加图标操作
+			//add logo
 			for (int i = 0; i < VEVideos.size(); i++) {
 				for (int j = 0; j < VEVideos.get(i).getEpDraws().size(); j++) {
 					filter_complex.append("[outv").append(i).append("][p").append(i).append("a").append(j).append("]overlay=")
@@ -207,12 +207,12 @@ public class VEEditor {
 					filter_complex.append("[outv").append(i).append("];");
 				}
 			}
-			//开始合成视频
+			//Start merging videos
 			for (int i = 0; i < VEVideos.size(); i++) {
 				filter_complex.append("[outv").append(i).append("]");
 			}
 			filter_complex.append("concat=n=").append(VEVideos.size()).append(":v=1:a=0[outv]");
-			//是否添加音轨
+			//whether add sound track
 			if (!isNoAudioTrack) {
 				filter_complex.append(";");
 				for (int i = 0; i < VEVideos.size(); i++) {
@@ -242,7 +242,7 @@ public class VEEditor {
 					break;
 				}
 			}
-			//执行命令
+
 			execCmd(cmd, duration, onEditorListener);
 		} else {
 			throw new RuntimeException("Need more than one video");
@@ -250,14 +250,14 @@ public class VEEditor {
 	}
 
 	/**
-	 * 无损合并多个视频
+	 * Merge multiple video lossless
 	 * <p>
-	 * 注意：此方法要求视频格式非常严格，需要合并的视频必须分辨率相同，帧率和码率也得相同
+	 * Note：this method has strict requirements for video format，all videos need to have the same resolution and frame rate, bite rate
 	 *
 	 * @param context          Context
-	 * @param VEVideos         需要合并的视频的集合
-	 * @param outputOption     输出选项
-	 * @param onEditorListener 回调监听
+	 * @param VEVideos         a list of videos needs to be combined
+	 * @param outputOption     output option
+	 * @param onEditorListener Listener for monitoring
 	 */
 	public static void mergeByLc(Context context, List<VEVideo> VEVideos, OutputOption outputOption, final OnEditorListener onEditorListener) {
 		String appDir = context.getFilesDir().getAbsolutePath() + "/EpVideos/";
@@ -284,14 +284,14 @@ public class VEEditor {
 	}
 
 	/**
-	 * 添加背景音乐
+	 * Add background music
 	 *
-	 * @param videoin          视频文件
-	 * @param audioin          音频文件
-	 * @param output           输出路径
-	 * @param videoVolume      视频原声音音量(例:0.7为70%)
-	 * @param audioVolume      背景音乐音量(例:1.5为150%)
-	 * @param onEditorListener 回调监听
+	 * @param videoin          input video path
+	 * @param audioin          input audio path
+	 * @param output           export path
+	 * @param videoVolume      video sound volume(e.g. 0.7 is 70%)
+	 * @param audioVolume      background music volume(e.g. 1.5 is 150%)
+	 * @param onEditorListener Listener for monitoring
 	 */
 	public static void music(String videoin, String audioin, String output, float videoVolume, float audioVolume, OnEditorListener onEditorListener) {
 		MediaExtractor mediaExtractor = new MediaExtractor();
@@ -321,12 +321,12 @@ public class VEEditor {
 	}
 
 	/**
-	 * 音视频分离
+	 * Seperate video with audio
 	 *
-	 * @param videoin          视频文件
-	 * @param out              输出文件路径
-	 * @param format           输出类型
-	 * @param onEditorListener 回调监听
+	 * @param videoin          input video path
+	 * @param out              export video path
+	 * @param format           output format
+	 * @param onEditorListener Listener for monitoring
 	 */
 	public static void demuxer(String videoin, String out, Format format, OnEditorListener onEditorListener) {
 		CmdList cmd = new CmdList();
@@ -345,13 +345,13 @@ public class VEEditor {
 	}
 
 	/**
-	 * 音视频倒放
+	 * Revert play video
 	 *
-	 * @param videoin          视频文件
-	 * @param out              输出文件路径
-	 * @param vr               是否视频倒放
-	 * @param ar               是否音频倒放
-	 * @param onEditorListener 回调监听
+	 * @param videoin          input video path
+	 * @param out              export video path
+	 * @param vr               whether revert play video
+	 * @param ar               whether revert play audio
+	 * @param onEditorListener Listener for monitoring
 	 */
 	public static void reverse(String videoin, String out, boolean vr, boolean ar, OnEditorListener onEditorListener) {
 		if (!vr && !ar) {
@@ -384,13 +384,13 @@ public class VEEditor {
 	}
 
 	/**
-	 * 音视频变速
+	 * Change speed of video
 	 *
-	 * @param videoin          音视频文件
-	 * @param out              输出路径
-	 * @param times            倍率（调整范围0.25-4）
-	 * @param pts              加速类型
-	 * @param onEditorListener 回调接口
+	 * @param videoin          input video path
+	 * @param out              export video path
+	 * @param times            speed (range 0.25-4)
+	 * @param pts              speed type
+	 * @param onEditorListener Listener API for monitoring
 	 */
 	public static void changePTS(String videoin, String out, float times, PTS pts, OnEditorListener onEditorListener) {
 		if (times < 0.25f || times > 4.0f) {
@@ -427,14 +427,14 @@ public class VEEditor {
 	}
 
 	/**
-	 * 视频转图片
+	 * Export video to images
 	 *
-	 * @param videoin			音视频文件
-	 * @param out				输出路径
-	 * @param w					输出图片宽度
-	 * @param h					输出图片高度
-	 * @param rate				每秒视频生成图片数
-	 * @param onEditorListener	回调接口
+	 * @param videoin          input video path
+	 * @param out              export video path
+	 * @param w					export image width
+	 * @param h					export image height
+	 * @param rate				how many images per second needs to be generated
+	 * @param onEditorListener	Listener API for monitoring
 	 */
 	public static void video2pic(String videoin, String out, int w, int h, float rate, OnEditorListener onEditorListener) {
 		if (w <= 0 || h <= 0) {
@@ -456,14 +456,14 @@ public class VEEditor {
 	}
 
 	/**
-	 * 图片转视频
+	 * Images to videos
 	 *
-	 * @param videoin			视频文件
-	 * @param out				输出路径
-	 * @param w					输出视频宽度
-	 * @param h					输出视频高度
-	 * @param rate				输出视频帧率
-	 * @param onEditorListener	回调接口
+	 * @param videoin          input video path
+	 * @param out              export video path
+	 * @param w					export video with
+	 * @param h					export video height
+	 * @param rate				export video frame rate
+	 * @param onEditorListener	Listener API for monitoring
 	 */
 	public static void pic2video(String videoin, String out, int w, int h, float rate, OnEditorListener onEditorListener) {
 		if (w < 0 || h < 0) {
@@ -491,7 +491,7 @@ public class VEEditor {
 
 
 	/**
-	 * 输出选项设置
+	 * Export options
 	 */
 	public static class OutputOption {
 		static final int ONE_TO_ONE = 1;// 1:1
@@ -500,20 +500,20 @@ public class VEEditor {
 		static final int NINE_TO_SIXTEEN = 4;// 9:16
 		static final int THREE_TO_FOUR = 5;// 3:4
 
-		String outPath;//输出路径
-		public int frameRate = 0;//帧率
-		public int bitRate = 0;//比特率(一般设置10M)
-		public String outFormat = "";//输出格式(目前暂时只支持mp4,x264,mp3,gif)
-		private int width = 0;//输出宽度
-		private int height = 0;//输出高度
-		private int sar = 6;//输出宽高比
+		String outPath;
+		public int frameRate = 0;
+		public int bitRate = 0;//normally 10M
+		public String outFormat = "";// only support mp4, x264, mp3, gif for now
+		private int width = 0;
+		private int height = 0;
+		private int sar = 6;//output width/height
 
 		public OutputOption(String outPath) {
 			this.outPath = outPath;
 		}
 
 		/**
-		 * 获取宽高比
+		 * Get Width/Height
 		 *
 		 * @return 1
 		 */
@@ -547,7 +547,7 @@ public class VEEditor {
 		}
 
 		/**
-		 * 获取输出信息
+		 * Get output information
 		 *
 		 * @return 1
 		 */
@@ -566,9 +566,9 @@ public class VEEditor {
 		}
 
 		/**
-		 * 设置宽度
+		 * Set width
 		 *
-		 * @param width 宽
+		 * @param width
 		 */
 		public void setWidth(int width) {
 			if (width % 2 != 0) width -= 1;
@@ -576,9 +576,9 @@ public class VEEditor {
 		}
 
 		/**
-		 * 设置高度
+		 * Set Height
 		 *
-		 * @param height 高
+		 * @param height
 		 */
 		public void setHeight(int height) {
 			if (height % 2 != 0) height -= 1;
@@ -587,11 +587,11 @@ public class VEEditor {
 	}
 
 	/**
-	 * 开始处理
+	 * Start executing
 	 *
-	 * @param cmd              命令
-	 * @param duration         视频时长（单位微秒）
-	 * @param onEditorListener 回调接口
+	 * @param cmd              command line
+	 * @param duration         video uration: in millisec
+	 * @param onEditorListener Listeners API for monitoring
 	 */
 	public static void execCmd(String cmd, long duration, final OnEditorListener onEditorListener) {
 		cmd = "ffmpeg " + cmd;
@@ -615,11 +615,11 @@ public class VEEditor {
 	}
 
 	/**
-	 * 开始处理
+	 * Start executing several command
 	 *
-	 * @param cmd              命令
-	 * @param duration         视频时长（单位微秒）
-	 * @param onEditorListener 回调接口
+	 * @param cmd              a list of command line
+	 * @param duration         video uration: in millisec
+	 * @param onEditorListener Listeners API for monitoring
 	 */
 	private static void execCmd(CmdList cmd, long duration, final OnEditorListener onEditorListener) {
 		String[] cmds = cmd.toArray(new String[cmd.size()]);

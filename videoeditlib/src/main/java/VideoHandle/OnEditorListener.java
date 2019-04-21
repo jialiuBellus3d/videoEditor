@@ -1,7 +1,7 @@
 package VideoHandle;
 
 /**
- * 执行完成/错误 时的回调接口
+ * UI Command execute completed/ error lister
  */
 public interface OnEditorListener {
 	void onSuccess();
