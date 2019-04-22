@@ -5,6 +5,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.Pair;
 import android.view.WindowManager;
 
@@ -40,6 +41,7 @@ public class MainActivity extends Activity {
     }
 
     DataItem getCurrentDataItem(int index){
+        Log.e(TAG, "totalList.get(index).first: "+totalList.get(index).first);
         return mDataList.get(totalList.get(index).first);
     }
 }

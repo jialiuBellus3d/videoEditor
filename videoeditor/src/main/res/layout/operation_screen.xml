@@ -54,7 +54,8 @@
             android:id="@+id/trimLL"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="gone">
 
             <HorizontalScrollView
                 android:id="@+id/itemScrollView"
@@ -114,7 +115,7 @@
                 android:id="@+id/textView11"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Speed"
+                android:text="Trim"
                 android:textAlignment="center"
                 android:textSize="24sp" />
 
@@ -209,6 +210,41 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"></LinearLayout>
             </HorizontalScrollView>
+
+            <LinearLayout
+                android:id="@+id/timingLL"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/textView1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/currentTiming"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="0:00.0"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/totalTiming"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="Total: 0:12.0"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/progressBarLL"

@@ -196,14 +196,15 @@ public class OperationFragment extends Fragment {
 
                 long sectionNumber = (long)(videoLength/VIDEO_SPLIT_TIME);
                 for(int j = 0; j<sectionNumber; j++) {
-                    mMainActivity.totalList.add(new Pair<Integer, Float>(i, videoLength));
-
                     ImageView imgView = new ImageView(mMainActivity);
                     Bitmap bmFrame = mediaMetadataRetriever.getFrameAtTime(j*3000000); //unit in microsecond
-                    if(i == 0 && j == 0){
-                        mImageView.setImageBitmap(bmFrame);
+                    if(j == 0){
                         mMainActivity.mDataList.add(new DataItem(true, 3, bmFrame.getWidth(), bmFrame.getHeight()));
+                        if(i == 0) {
+                            mImageView.setImageBitmap(bmFrame);
+                        }
                     }
+                    mMainActivity.totalList.add(new Pair<Integer, Float>(i, videoLength));
                     imgView.setImageBitmap(bmFrame);
                     scrollPreviewLL.addView(imgView);
                     imgView.setScaleType(ImageView.ScaleType.CENTER_CROP);
